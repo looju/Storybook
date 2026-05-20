@@ -1,9 +1,9 @@
-import supabaseClient from "@/configs/supabse";
+import { supabaseClient } from "@/configs/supabse";
 import { generateSpeech, timestampsToCaptions } from "@speech-sdk/core";
 import { createCartesia } from "@speech-sdk/core/providers";
 import fs from "fs";
 import { NextResponse } from "next/server";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
 import util from "util";
 export async function POST(req: Request) {
   const { text } = await req.json();
@@ -25,9 +25,12 @@ export async function POST(req: Request) {
     speed: 1,
     timestamps: true,
   });
+
+  // console.log(result, "response from audio generator");
+
   const srt = timestampsToCaptions(result.timestamps ?? []);
   const audioBuffer = Buffer.from(result.audio.base64, "base64");
-  const fileName = `audio/generated-audios/${randomUUID()}.mp3`;
+  const fileName = `audio/generated-audios/${uuidv4()}.mp3`;
 
   const { data, error } = await supabaseClient.storage
     .from("Storybase")

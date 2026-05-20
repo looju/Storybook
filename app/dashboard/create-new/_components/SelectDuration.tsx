@@ -9,13 +9,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { optionType } from "@/.next/types/layout";
-import { fieldNameType } from "../page";
+import { fieldNameType } from "@/types";
+
 function SelectDuration({
   onUserSelect,
 }: {
   onUserSelect: (fieldName: fieldNameType, fieldValue: string) => void;
 }) {
   const options = [
+    "10 seconds",
     "20 seconds",
     "25 seconds",
     "30 seconds",

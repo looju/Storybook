@@ -1,7 +1,7 @@
 "use client";
+import { fieldNameType } from "@/types";
 import { Image } from "@unpic/react";
 import React, { useState } from "react";
-import { fieldNameType } from "../page";
 
 function SelectStyle({
   onUserSelect,

@@ -1,11 +1,32 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import EmptyState from "./_components/EmptyState";
 import Link from "next/link";
+import { supabaseBrowserClient } from "@/configs/supabse";
+import { useUser } from "@clerk/nextjs";
+import { VideoDataFetchType } from "@/types";
+import { DisplayVideoList } from "./_components/VideoList";
 
 function Dashboard() {
-  const [videoList, setVideoList] = useState([]);
+  const [videoList, setVideoList] = useState<
+    Partial<VideoDataFetchType>[] | null
+  >([]);
+  const user = useUser();
+
+  const getAllVideosFromDb = async () => {
+    const { data, error } = await supabaseBrowserClient
+      .from("VideoData")
+      .select("*")
+      .eq("user_id", user?.user?.id);
+    if (error) console.error(error, "error getting videos from db");
+    setVideoList(data);
+  };
+
+  useEffect(() => {
+    user && getAllVideosFromDb();
+  }, [user]);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -16,7 +37,11 @@ function Dashboard() {
       </div>
 
       {/* Empty state */}
-      {videoList.length == 0 && <EmptyState />}
+      {videoList?.length == 0 ? (
+        <EmptyState />
+      ) : (
+        <DisplayVideoList videos={videoList} />
+      )}
     </div>
   );
 }

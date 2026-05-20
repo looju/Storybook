@@ -1,5 +1,5 @@
-import supabaseClient from "@/configs/supabse";
-import { randomUUID } from "crypto";
+import { supabaseClient } from "@/configs/supabse";
+import { v4 as uuidv4 } from "uuid";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -25,9 +25,10 @@ export async function POST(req: Request) {
     );
 
     const result = await response.json();
+    // console.log(result, "response from generate image generator");
     const base64Image = result?.result?.image; //base64 format
     const imageBuffer = Buffer.from(base64Image, "base64");
-    const fileName = `image/generated-images/${randomUUID()}.png`;
+    const fileName = `image/generated-images/${uuidv4()}.png`;
 
     const { data, error } = await supabaseClient.storage
       .from("Storybase")

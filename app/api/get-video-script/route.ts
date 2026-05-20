@@ -17,6 +17,8 @@ export async function POST(req: Request) {
       });
       let fileIndex = 0;
       let text = "";
+
+      // console.log(response, "response from vdieo script generator");
       for await (const chunk of response) {
         text += chunk?.text ?? "";
         return NextResponse.json({

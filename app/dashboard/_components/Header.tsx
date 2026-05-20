@@ -1,4 +1,5 @@
 "use client";
+import { useUserDetailContext } from "@/app/_context/UserDetailContext";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/nextjs";
 import { CloudMoon, Moon, Sun } from "lucide-react";
@@ -8,13 +9,26 @@ import React from "react";
 
 function Header() {
   const { theme, setTheme } = useTheme();
+  const { userDetail } = useUserDetailContext();
+
   return (
     <div className="justify-between flex items-center shadow-md px-3">
       <div className="flex gap-3 items-center">
         <Image src={"/logoicon.svg"} height={40} width={40} alt="logo" />
         <h2 className="font-bold text-xl text-orange-500">STORYBOOK</h2>
       </div>
-      <div className="flex gap-5 items-center">
+      <div className="flex flex-row gap-5 items-center">
+        <div className="flex flex-row items-center">
+          <Image
+            src={"/dollar.gif"}
+            alt="loading-icon"
+            width={30}
+            height={30}
+          />
+          <h2 className="text-orange-400 font-semibold">
+            {userDetail?.credits}
+          </h2>
+        </div>
         {theme == "light" ? (
           <CloudMoon onClick={() => setTheme("dark")} />
         ) : (

@@ -58,3 +58,30 @@ export type AppContextType = {
     React.SetStateAction<Partial<VideoDataContextType>>
   >;
 };
+
+export type UserDetailContextType = {
+  _id: string;
+  created_at: string;
+  name: string;
+  image_url: string;
+  email: string;
+  subscription: boolean;
+  credits: number;
+};
+
+export type UserDetailAppContextType = {
+  userDetail: Partial<UserDetailContextType>;
+  setUserDetail: React.Dispatch<
+    React.SetStateAction<Partial<UserDetailContextType>>
+  >;
+};
+
+export type VideoDataFetchType = {
+  _id: string;
+  script: VideoScriptData[];
+  audio_file_url: string;
+  captions: readonly WordTimestamp[] | undefined;
+  image_list: string[] | undefined;
+  created_by: string;
+  user_id: string;
+};

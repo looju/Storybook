@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import SelectTopic from "./_components/SelectTopic";
 import SelectStyle from "./_components/SelectStyle";
 import SelectDuration from "./_components/SelectDuration";
@@ -15,10 +15,16 @@ import {
   ImageResultType,
   TimestampData,
   UserFormData,
+  VideoDataContextType,
   VideoScriptData,
 } from "@/types";
 import { useVideoDataContext } from "@/app/_context/videoDataContext";
 import { WordTimestamp } from "@speech-sdk/core/types";
+import { supabaseBrowserClient } from "@/configs/supabse";
+import { useUser } from "@clerk/nextjs";
+import PlayerDialog from "../_components/PlayerDialog";
+import { useRouter } from "next/router";
+import { useUserDetailContext } from "@/app/_context/UserDetailContext";
 
 const script = [
   {
@@ -35,7 +41,12 @@ function CreateNew() {
     readonly WordTimestamp[] | undefined
   >([]);
   const [imageList, setImageList] = useState<string[]>();
+  const [playVideo, setPlayVideo] = useState(false);
+  const [videoId, setVideoId] = useState("");
   const { videoData, setVideoData } = useVideoDataContext();
+  const { userDetail, setUserDetail } = useUserDetailContext();
+  const user = useUser();
+
   const onHandleInputChange = (
     fieldName: fieldNameType,
     fieldValue: string,
@@ -136,6 +147,68 @@ function CreateNew() {
     setLoading(false);
   };
 
+  const saveVideoToDb = async (videoData: Partial<VideoDataContextType>) => {
+    setLoading(true);
+    const videoId = uuidv4();
+    const { data, error } = await supabaseBrowserClient
+      .from("VideoData")
+      .insert([
+        {
+          _id: videoId,
+          script: videoScript,
+          audio_file_url: audioFileUrl,
+          captions,
+          image_list: imageList,
+          created_by: `${user?.user?.fullName}--${user?.user?.emailAddresses[0]?.emailAddress}`,
+          user_id: `${user?.user?.id}`,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.log("Error:", error.message);
+    } else {
+      console.log("Inserted:", data);
+      await updateUserCredits();
+      setVideoId(videoId);
+      setPlayVideo(true);
+    }
+  };
+
+  const updateUserCredits = async () => {
+    const { data, error } = await supabaseBrowserClient
+      .from("Users")
+      .update({
+        credits: userDetail?.credits! - 10,
+      })
+      .eq("_id", userDetail?._id)
+      .select();
+    if (error) {
+      console.log("error updating user credits:", error);
+    } else {
+      setUserDetail((prev) => ({
+        ...prev,
+        credits: userDetail?.credits! - 10,
+      }));
+      setVideoData({});
+      console.log(data, "updatted user credits");
+    }
+  };
+
+  useEffect(() => {
+    if (Object.keys(videoData)?.length === 4) {
+      saveVideoToDb(videoData);
+    }
+  }, [videoData]);
+
+  const onClickButtonHandler = () => {
+    if (userDetail && userDetail?.credits! > 0) {
+      GetVideoScript();
+    } else {
+      toast.error("You do not have enough credits to create a new video");
+    }
+  };
+
   return (
     <div className="md:px-20">
       <h2 className="font-bold text-3xl text-orange-500 text-center">
@@ -149,7 +222,10 @@ function CreateNew() {
         {/* duration */}
         <SelectDuration onUserSelect={onHandleInputChange} />
         {/* create button */}
-        <Button className="mt-10 w-full bg-orange-500" onClick={GetVideoScript}>
+        <Button
+          className="mt-10 w-full bg-orange-500"
+          onClick={onClickButtonHandler}
+        >
           Create Short Video
         </Button>
         <Button
@@ -168,6 +244,7 @@ function CreateNew() {
         </Button>
       </div>
       <CustomLoading loading={loading} />
+      <PlayerDialog playVideo={playVideo} videoId={videoId} />
     </div>
   );
 }

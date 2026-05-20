@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { optionType } from "@/.next/types/layout";
-import { fieldNameType } from "../page";
+import { fieldNameType } from "@/types";
 function SelectTopic({
   onUserSelect,
 }: {
