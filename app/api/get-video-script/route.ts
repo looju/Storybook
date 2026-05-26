@@ -1,4 +1,4 @@
-import { aiGen, config, model } from "@/configs/model";
+import { aiGen, config, getGroqChatCompletion, model } from "@/configs/model";
 import { NextResponse } from "next/server";
 
 function sleep(ms: number) {
@@ -10,17 +10,12 @@ export async function POST(req: Request) {
     try {
       const { prompt } = await req.json();
       console.log(prompt, "prompt from client");
-      const response = await aiGen.models.generateContentStream({
-        model: model,
-        config: config,
-        contents: prompt,
-      });
-      let fileIndex = 0;
+      const response = await getGroqChatCompletion(prompt);
       let text = "";
 
       // console.log(response, "response from vdieo script generator");
       for await (const chunk of response) {
-        text += chunk?.text ?? "";
+        text += chunk?.choices[0]?.delta?.content ?? "";
         return NextResponse.json({
           result: JSON.parse(text?.length > 0 ? text : "No response yet"),
         });

@@ -23,18 +23,18 @@ import { fa } from "zod/v4/locales";
 
 export default function PlayerDialog({
   playVideo,
+  setPlayVideo,
   videoId,
 }: {
-  playVideo: boolean | number;
+  playVideo: boolean;
   videoId: string;
+  setPlayVideo: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [videoData, setVideoData] = useState<VideoDataFetchType | null>(null);
   const [durationInFrames, setDurationInFrames] = useState<number>(30);
   const router = useRouter();
 
   useEffect(() => {
-    setOpenDialog(!openDialog);
     videoId && getVideoById(videoId);
   }, [playVideo, videoId]);
 
@@ -49,7 +49,7 @@ export default function PlayerDialog({
   }
 
   return (
-    <Dialog open={openDialog}>
+    <Dialog open={playVideo}>
       <DialogOverlay className="bg-black/85" />
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -77,18 +77,18 @@ export default function PlayerDialog({
           />
         </DialogDescription>
         <DialogFooter>
-          <DialogClose asChild>
+          <DialogClose asChild className="flex w-full">
             <Button
               variant="outline"
+              className="w-full"
               onClick={() => {
-                setOpenDialog(false);
+                setPlayVideo(false);
                 router.replace("/dashboard");
               }}
             >
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit">Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -5,6 +5,7 @@ import Provider from "./provider";
 import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+
 const playfair = Playfair_Display({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,8 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={playfair.className}>
+      <html lang="en" suppressHydrationWarning>
+        <body>
           <ThemeProvider
             attribute={"class"}
             defaultTheme={"light"}

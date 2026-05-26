@@ -1,13 +1,10 @@
-// To run this code you need to install the following dependencies:
-// npm install @google/genai mime
-// npm install -D @types/node
-
 import {
   GenerateContentConfig,
   GoogleGenAI,
   ThinkingLevel,
   ToolListUnion,
 } from "@google/genai";
+import Groq from "groq-sdk";
 
 export const aiGen = new GoogleGenAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
@@ -39,12 +36,29 @@ export const chatSession = [
   },
 ];
 
-// const response = await ai.models.generateContentStream({
-//   model,
-//   config,
-//   contents,
-// });
-// let fileIndex = 0;
-// for await (const chunk of response) {
-//   console.log(chunk.text);
-// }
+const groq = new Groq();
+export const getGroqChatCompletion = async (content: string) => {
+  return groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `You are a story teller. You write compelling and entertaining stories.
+                Respond only with JSON using this format:
+                {
+                    "ContentText": "The story context",
+                    "ImagePrompt": "Prompts that can be used to fenerate images to match the story context, return as an array of prompts";  
+               }`,
+      },
+      {
+        role: "user",
+        content: content,
+      },
+    ],
+    model: "llama-3.1-8b-instant",
+    temperature: 0.5,
+    max_completion_tokens: 700,
+    top_p: 1,
+    stop: null,
+    stream: true,
+  });
+};
