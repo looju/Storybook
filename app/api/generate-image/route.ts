@@ -5,9 +5,11 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const model = "@cf/black-forest-labs/flux-2-klein-4b";
+
     const { imagePrompt } = await req.json();
 
     const form = new FormData();
+
     form.append("prompt", imagePrompt);
     form.append("width", "1024");
     form.append("height", "1280");
@@ -24,10 +26,22 @@ export async function POST(req: Request) {
       },
     );
 
-    const result = await response.json();
-    // console.log(result, "response from generate image generator");
-    const base64Image = result?.result?.image; //base64 format
-    const imageBuffer = Buffer.from(base64Image, "base64");
+    console.log(response, "image response from ai");
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      return NextResponse.json(
+        { error: errorText },
+        { status: response.status },
+      );
+    }
+
+    // Cloudflare returns binary image data
+    const arrayBuffer = await response.arrayBuffer();
+
+    const imageBuffer = Buffer.from(arrayBuffer);
+
     const fileName = `image/generated-images/${uuidv4()}.png`;
 
     const { data, error } = await supabaseClient.storage
@@ -37,10 +51,7 @@ export async function POST(req: Request) {
       });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status },
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     const { data: urlData } = supabaseClient.storage
@@ -54,8 +65,9 @@ export async function POST(req: Request) {
     });
   } catch (err: any) {
     console.error(err, "error generating image");
+
     return NextResponse.json(
-      { error: "Failed to generate image:", err },
+      { error: err.message || "Failed to generate image" },
       { status: 500 },
     );
   }

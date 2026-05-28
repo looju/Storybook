@@ -36,7 +36,9 @@ export const chatSession = [
   },
 ];
 
-const groq = new Groq();
+const groq = new Groq({
+  apiKey: process.env.NEXT_PUBLIC_GROQ_KEY,
+});
 export const getGroqChatCompletion = async (content: string) => {
   return groq.chat.completions.create({
     messages: [
@@ -59,6 +61,6 @@ export const getGroqChatCompletion = async (content: string) => {
     max_completion_tokens: 700,
     top_p: 1,
     stop: null,
-    stream: true,
+    stream: false,
   });
 };

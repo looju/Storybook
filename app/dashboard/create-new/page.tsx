@@ -75,7 +75,7 @@ function CreateNew() {
       return;
     }
 
-    const prompt = `Write a script to generate ${formData.duration} video on topic: ${formData.topic} story along with AI image prompt in ${formData.style} format for each scene and give me fesult in JSON format with imagePrompt and ContentText as field, no plain text.Maximum number of characters is 350 and add emotion tags like this:[happy],[sad],[angry]`;
+    const prompt = `Write a short script to generate a ${formData.duration} video on the topic: ${formData.topic} story along with AI image prompt in ${formData.style} format for each scene and give me fesult in JSON format with imagePrompt and ContentText as field, no plain text.Maximum number of characters is 350 and add emotion tags like this:[happy],[sad],[angry]`;
     await axios
       .post("/api/get-video-script", {
         prompt: prompt,
@@ -86,18 +86,18 @@ function CreateNew() {
           ...prev,
           videoScript: res?.data?.result,
         }));
-        generateAudioFile(res?.data?.result);
-        generateImage(res?.data?.result);
+        // generateAudioFile(res?.data?.result);
+        // generateImage(res?.data?.result);
         setLoading(false);
       })
       .catch((e) => {
         console.log(e, "error");
         setLoading(false);
       });
-    setLoading(false);
   };
 
   const generateAudioFile = async (videoResult: VideoScriptData[]) => {
+    setLoading(true);
     const id = uuidv4();
     let script = "";
     videoResult.forEach((item) => {
@@ -119,6 +119,9 @@ function CreateNew() {
       })
       .catch((e) => {
         console.log("error generating audio file:", e);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -136,7 +139,6 @@ function CreateNew() {
         })
         .catch((e) => {
           console.log("error generating images:", e);
-          setLoading(false);
         });
     }
     setImageList(images);
@@ -146,6 +148,15 @@ function CreateNew() {
     }));
     setLoading(false);
   };
+
+  console.log(
+    "video script:",
+    videoScript,
+    "audioFileurl:",
+    audioFileUrl,
+    "image list:",
+    imageList,
+  );
 
   const saveVideoToDb = async (videoData: Partial<VideoDataContextType>) => {
     setLoading(true);
@@ -167,9 +178,11 @@ function CreateNew() {
 
     if (error) {
       console.log("Error:", error.message);
+      setLoading(false);
     } else {
       console.log("Inserted:", data);
       await updateUserCredits();
+      setLoading(false);
       setVideoId(videoId);
       setPlayVideo(true);
     }
@@ -215,20 +228,16 @@ function CreateNew() {
         Create New
       </h2>
       <div className="mt-10 shadow-md p-10">
-        {/* select topic */}
         <SelectTopic onUserSelect={onHandleInputChange} />
-        {/* select style */}
         <SelectStyle onUserSelect={onHandleInputChange} />
-        {/* duration */}
         <SelectDuration onUserSelect={onHandleInputChange} />
-        {/* create button */}
         <Button
           className="mt-10 w-full bg-orange-500"
           onClick={onClickButtonHandler}
         >
           Create Short Video
         </Button>
-        <Button
+        {/* <Button
           className="mt-10 w-full bg-orange-500"
           onClick={() =>
             // generateAudioFile([
@@ -241,10 +250,14 @@ function CreateNew() {
           }
         >
           Create Short Audio
-        </Button>
+        </Button> */}
       </div>
       <CustomLoading loading={loading} />
-      <PlayerDialog playVideo={playVideo} videoId={videoId} />
+      <PlayerDialog
+        playVideo={playVideo}
+        videoId={videoId}
+        setPlayVideo={setPlayVideo}
+      />
     </div>
   );
 }
